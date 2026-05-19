@@ -1,30 +1,39 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/Login.css';
 
-const Login = ({ onLoginSuccess }) => {
+const Login = () => {
   const [user, setUser] = useState('');
   const [pass, setPass] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
     try {
       const res = await axios.post('http://localhost:4000/api/login', { 
         usuario: user, 
         password: pass 
       });
       if (res.data.success) {
-        onLoginSuccess(res.data.user);
+        localStorage.setItem('usuarioClinica', JSON.stringify(res.data.user));
+        navigate('/dashboard');
       }
-    } catch (error) {
-      alert("Credenciales incorrectas o error de conexión");
+    } catch (err) {
+      setError('Credenciales incorrectas o error de conexión');
     }
   };
 
   return (
     <div className="login-container">
       <form onSubmit={handleLogin} className="login-form">
-        <h2>Acceso Clínica</h2>
+        <h2>Programacion de cirugias</h2>
+        <p className="login-subtitle">Ingrese</p>
+        
+        {error && <p className="error-message">{error}</p>}
+        
         <input 
           type="text" 
           placeholder="Usuario" 
