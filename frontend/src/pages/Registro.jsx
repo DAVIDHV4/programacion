@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import clienteAxios from '../config/axios';
 import Select from 'react-select';
 import '../styles/Registro.css';
 import toast, { Toaster } from 'react-hot-toast';
@@ -59,6 +59,7 @@ const Registro = () => {
   const [medicos, setMedicos] = useState([]);
   const [cirugiasResultados, setCirugiasResultados] = useState([]);
   const [mostrarOjo, setMostrarOjo] = useState(false);
+  const [guardando, setGuardando] = useState(false);
 
   const [formData, setFormData] = useState({
     sucursal: '',
@@ -97,7 +98,7 @@ const Registro = () => {
 
     const fetchDiccionarios = async () => {
       try {
-        const res = await axios.get('http://localhost:4000/api/formulario/diccionarios');
+        const res = await clienteAxios.get('/formulario/diccionarios');
         if (res.data.success) setDiccionarios(res.data.data);
       } catch (error) {}
     };
@@ -108,7 +109,7 @@ const Registro = () => {
     if (id) {
       const fetchCirugia = async () => {
         try {
-          const res = await axios.get(`http://localhost:4000/api/formulario/cirugia/${id}`);
+          const res = await clienteAxios.get(`/formulario/cirugia/${id}`);
           if (res.data.success) {
             const d = res.data.data;
             const mapSituacion = { 'ACT': 'ACTIVO', 'INA': 'INACTIVO', 'REA': 'REALIZADA', 'SUS': 'SUSPENDIDA', 'CAN': 'CANCELADA' };
@@ -158,7 +159,7 @@ const Registro = () => {
 
       const fetchMedicos = async () => {
         try {
-          const res = await axios.get(`http://localhost:4000/api/formulario/medicos/${formData.especialidad}`);
+          const res = await clienteAxios.get(`/formulario/medicos/${formData.especialidad}`);
           if (res.data.success) {
             setMedicos(res.data.data);
             setFormData(prev => {
@@ -187,7 +188,7 @@ const Registro = () => {
   const handleBuscarDni = async () => {
     if (!formData.pacienteDni) return;
     try {
-      const res = await axios.get(`http://localhost:4000/api/formulario/paciente/${formData.pacienteDni}`);
+      const res = await clienteAxios.get(`/formulario/paciente/${formData.pacienteDni}`);
       if (res.data.success && res.data.data) {
         setFormData(prev => ({ ...prev, pacienteNombre: res.data.data.NOMBRE_COMPLETO, codPaciente: res.data.data.COD_PACIENTE }));
       } else {
@@ -202,7 +203,7 @@ const Registro = () => {
     setFormData(prev => ({ ...prev, cirugiaSearch: term, codCirugia: '', codEmpresa: '', codFamilia: '' }));
     if (term.length > 2) {
       try {
-        const res = await axios.get(`http://localhost:4000/api/formulario/cirugias/buscar?q=${term}`);
+        const res = await clienteAxios.get(`/formulario/cirugias/buscar?q=${term}`);
         if (res.data.success) setCirugiasResultados(res.data.data);
       } catch (error) {}
     } else {
@@ -242,12 +243,14 @@ const Registro = () => {
       });
       return;
     }
+
+    setGuardando(true);
     
     try {
-      const url = id ? `http://localhost:4000/api/formulario/actualizar/${id}` : 'http://localhost:4000/api/formulario/guardar';
+      const url = id ? `/formulario/actualizar/${id}` : '/formulario/guardar';
       const method = id ? 'put' : 'post';
       
-      const res = await axios[method](url, formData);
+      const res = await clienteAxios[method](url, formData);
       if (res.data.success) {
         toast.success(`¡Cirugía ${id ? 'actualizada' : 'programada'} con éxito!`, {
           style: { background: '#0D3049', color: '#fff', borderRadius: '50px' },
@@ -257,6 +260,8 @@ const Registro = () => {
       }
     } catch (error) { 
       toast.error(`Error al ${id ? 'actualizar' : 'guardar'}, intente de nuevo`); 
+    } finally {
+      setGuardando(false);
     }
   };
 
@@ -356,7 +361,16 @@ const Registro = () => {
             </div>
           </div>
 
-          <div className="form-actions"><button type="submit" className="btn-guardar">{id ? 'ACTUALIZAR CIRUGÍA' : 'GUARDAR CIRUGÍA'}</button></div>
+          <div className="form-actions">
+            <button 
+              type="submit" 
+              className="btn-guardar"
+              disabled={guardando}
+              style={{ opacity: guardando ? 0.7 : 1, cursor: guardando ? 'not-allowed' : 'pointer' }}
+            >
+              {guardando ? 'PROCESANDO ESPERE...' : (id ? 'ACTUALIZAR CIRUGÍA' : 'GUARDAR CIRUGÍA')}
+            </button>
+          </div>
         </form>
       </div>
     </div>

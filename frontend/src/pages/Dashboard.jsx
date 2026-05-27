@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import clienteAxios from '../config/axios';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
@@ -12,7 +12,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchCirugias = async () => {
       try {
-        const res = await axios.get(`http://localhost:4000/api/cirugias?mes=${mes}&busqueda=${busqueda}`);
+        const res = await clienteAxios.get(`/cirugias?mes=${mes}&busqueda=${busqueda}`);
         if (res.data.success) {
           setCirugias(res.data.data);
         }
