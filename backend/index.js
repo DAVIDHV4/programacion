@@ -78,6 +78,7 @@ app.get('/api/cirugias', async (req, res) => {
             .input('busqueda', sql.VarChar, `%${busqueda}%`)
             .query(`
                 SELECT 
+                    ID_PROG_CIRUGIA,
                     EMPRESA,
                     FEC_CIRUGIA AS FECHA,
                     PACIENTE,
@@ -97,7 +98,6 @@ app.get('/api/cirugias', async (req, res) => {
                 )
                 ORDER BY FECHA ASC, HORA_INICIO ASC
             `);
-
         res.json({ success: true, data: result.recordset });
     } catch (err) {
         res.status(500).json({ success: false, message: "Error al obtener la programación" });

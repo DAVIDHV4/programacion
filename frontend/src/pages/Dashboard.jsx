@@ -44,7 +44,6 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      {/* Nuevo contenedor para el estilo de "Tarjeta Blanca" */}
       <div className="dashboard-content">
         
         <header className="dashboard-header">
@@ -106,8 +105,13 @@ const Dashboard = () => {
                   </td>
                 </tr>
               ) : (
-                cirugias.map((c, index) => (
-                  <tr key={index}>
+                cirugias.map((c) => (
+                  <tr 
+                    key={c.ID_PROG_CIRUGIA} 
+                    onClick={() => navigate(`/registro/${c.ID_PROG_CIRUGIA}`)}
+                    style={{ cursor: 'pointer' }}
+                    className="fila-hover"
+                  >
                     <td style={{ whiteSpace: 'nowrap' }}>{formatFecha(c.FECHA)}</td>
                     <td style={{ whiteSpace: 'nowrap' }}>{c.HORA_INICIO} - {c.HORA_FIN}</td>
                     <td>{c.PACIENTE}</td>

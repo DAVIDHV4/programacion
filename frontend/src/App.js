@@ -8,11 +8,12 @@ import { Toaster } from 'react-hot-toast';
 function App() {
   return (
     <BrowserRouter>
-    <Toaster position="top-center" reverseOrder={false} />
+      <Toaster position="top-center" reverseOrder={false} />
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/registro" element={<Registro />} />
+        <Route path="/registro/:id" element={<Registro />} />
       </Routes>
     </BrowserRouter>
   );

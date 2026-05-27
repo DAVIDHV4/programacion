@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Select from 'react-select';
 import '../styles/Registro.css';
@@ -51,6 +51,7 @@ const customStyles = {
 };
 
 const Registro = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   const [diccionarios, setDiccionarios] = useState({
     sedes: [], especialidades: [], salas: [], horas: [], procedencias: [], anestesiologos: [], medicosIndica: []
@@ -98,10 +99,52 @@ const Registro = () => {
       try {
         const res = await axios.get('http://localhost:4000/api/formulario/diccionarios');
         if (res.data.success) setDiccionarios(res.data.data);
-      } catch (error) { console.error("Error al cargar diccionarios"); }
+      } catch (error) {}
     };
     fetchDiccionarios();
   }, []);
+
+  useEffect(() => {
+    if (id) {
+      const fetchCirugia = async () => {
+        try {
+          const res = await axios.get(`http://localhost:4000/api/formulario/cirugia/${id}`);
+          if (res.data.success) {
+            const d = res.data.data;
+            const mapSituacion = { 'ACT': 'ACTIVO', 'INA': 'INACTIVO', 'REA': 'REALIZADA', 'SUS': 'SUSPENDIDA', 'CAN': 'CANCELADA' };
+            setFormData(prev => ({
+              ...prev,
+              sucursal: d.COD_SUCURSAL ? d.COD_SUCURSAL.toString() : '',
+              especialidad: d.COD_ESPECIALIDAD ? d.COD_ESPECIALIDAD.toString() : '',
+              medico: d.COD_MEDICO ? d.COD_MEDICO.toString() : '',
+              ingresoClinica: d.TIP_INGRESO === 'S' ? 'SI' : 'NO',
+              pacienteDni: d.pacienteDni || '',
+              pacienteNombre: d.pacienteNombre || '',
+              codPaciente: d.COD_PACIENTE_CIRUGIA || '',
+              tipoCirugia: d.TIP_CIRUGIA || 'AMBULATORIA',
+              anestesiologo: d.COD_MEDICO_ANESTECIOLOGO ? d.COD_MEDICO_ANESTECIOLOGO.toString() : '',
+              tipoAnestesia: d.TIP_ANESTECIA || 'LOCAL',
+              cirugiaSearch: d.cirugiaSearch || '',
+              codCirugia: d.COD_ARTICULO_SERV_PROCEDIMIENTO || '',
+              codEmpresa: d.COD_EMPRESA_PROCEDIMIENTO || '',
+              codFamilia: d.COD_FAMILIA_PROCEDIMIENTO || '',
+              observaciones: d.DES_OBSERVACION || '',
+              fechaCirugia: d.FEC_CIRUGIA ? d.FEC_CIRUGIA.split('T')[0] : '',
+              salaOperacion: d.COD_HABITACION ? d.COD_HABITACION.toString() : '',
+              horaInicio: d.HORA_INI ? d.HORA_INI.toString() : '',
+              horaFin: d.HORA_FIN ? d.HORA_FIN.toString() : '',
+              situacion: mapSituacion[d.TIP_SITUACION] || 'ACTIVO',
+              procedencia: d.COD_PROCEDENCIA || '',
+              medicoIndica: d.COD_MEDICO_INDICA ? d.COD_MEDICO_INDICA.toString() : ''
+            }));
+          }
+        } catch (error) {
+          toast.error("Error al cargar la cirugía");
+        }
+      };
+      fetchCirugia();
+    }
+  }, [id]);
 
   useEffect(() => {
     if (formData.especialidad) {
@@ -118,9 +161,12 @@ const Registro = () => {
           const res = await axios.get(`http://localhost:4000/api/formulario/medicos/${formData.especialidad}`);
           if (res.data.success) {
             setMedicos(res.data.data);
-            setFormData(prev => ({ ...prev, medico: '' }));
+            setFormData(prev => {
+              const medicoExiste = res.data.data.some(m => m.cod_medico.toString() === prev.medico);
+              return { ...prev, medico: medicoExiste ? prev.medico : '' };
+            });
           }
-        } catch (error) { console.error("Error al cargar médicos"); }
+        } catch (error) {}
       };
       fetchMedicos();
     } else {
@@ -158,7 +204,7 @@ const Registro = () => {
       try {
         const res = await axios.get(`http://localhost:4000/api/formulario/cirugias/buscar?q=${term}`);
         if (res.data.success) setCirugiasResultados(res.data.data);
-      } catch (error) { console.error("Error buscando cirugía"); }
+      } catch (error) {}
     } else {
       setCirugiasResultados([]);
     }
@@ -198,24 +244,27 @@ const Registro = () => {
     }
     
     try {
-      const res = await axios.post('http://localhost:4000/api/formulario/guardar', formData);
+      const url = id ? `http://localhost:4000/api/formulario/actualizar/${id}` : 'http://localhost:4000/api/formulario/guardar';
+      const method = id ? 'put' : 'post';
+      
+      const res = await axios[method](url, formData);
       if (res.data.success) {
-        toast.success("¡Cirugía programada con éxito!", {
+        toast.success(`¡Cirugía ${id ? 'actualizada' : 'programada'} con éxito!`, {
           style: { background: '#0D3049', color: '#fff', borderRadius: '50px' },
           iconTheme: { primary: '#fff', secondary: '#0D3049' },
         });
         navigate('/dashboard');
       }
     } catch (error) { 
-      toast.error("Error al guardar, intente de nuevo"); 
+      toast.error(`Error al ${id ? 'actualizar' : 'guardar'}, intente de nuevo`); 
     }
-};
+  };
 
   return (
     <div className="registro-container">
       <div className="registro-content">
         <header className="registro-header">
-          <h2>Programar Nueva Cirugía</h2>
+          <h2>{id ? 'Editar Cirugía' : 'Programar Nueva Cirugía'}</h2>
           <button type="button" className="btn-volver" onClick={() => navigate('/dashboard')}>Volver</button>
         </header>
 
@@ -223,9 +272,9 @@ const Registro = () => {
           <div className="form-section">
             <h3 className="section-title">Datos Institucionales</h3>
             <div className="form-grid">
-              <div className="form-group" style={{ zIndex: 100 }}>
+              <div className="form-group">
                 <label>Sede (Obligatorio)</label>
-                <Select options={sedesOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." onChange={(opt) => handleSelectChange('sucursal', opt)} />
+                <Select options={sedesOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." value={sedesOptions.find(opt => opt.value === formData.sucursal) || null} onChange={(opt) => handleSelectChange('sucursal', opt)} />
               </div>
               <div className="form-group"><label>Usuario</label><input type="text" value={formData.usuario} disabled /></div>
               <div className="form-group"><label>Fecha Actual</label><input type="text" value={formData.fechaActual} disabled /></div>
@@ -256,21 +305,13 @@ const Registro = () => {
           <div className="form-section">
             <h3 className="section-title">Datos Clínicos y Procedimiento</h3>
             <div className="form-grid">
-              <div className="form-group" style={{ zIndex: 90 }}>
+              <div className="form-group">
                 <label>Especialidad (Obligatorio)</label>
-                <Select options={especialidadesOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." onChange={(opt) => handleSelectChange('especialidad', opt)} />
+                <Select options={especialidadesOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." value={especialidadesOptions.find(opt => opt.value === formData.especialidad) || null} onChange={(opt) => handleSelectChange('especialidad', opt)} />
               </div>
               <div className="form-group">
                 <label>Médico Principal (Obligatorio)</label>
-                <Select 
-                  options={medicosOptions} 
-                  styles={customStyles} 
-                  filterOption={customFilter} 
-                  placeholder="Seleccione..." 
-                  isDisabled={!formData.especialidad}
-                  value={formData.medico ? medicosOptions.find(opt => opt.value === formData.medico) : null} 
-                  onChange={(opt) => handleSelectChange('medico', opt)} 
-                />
+                <Select options={medicosOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." isDisabled={!formData.especialidad} value={medicosOptions.find(opt => opt.value === formData.medico) || null} onChange={(opt) => handleSelectChange('medico', opt)} />
               </div>
               <div className="form-group autocomplete-group span-2">
                 <label>Cirugía / Procedimiento (Obligatorio)</label>
@@ -291,7 +332,7 @@ const Registro = () => {
               )}
               <div className="form-group"><label>Tipo de Cirugía</label><select name="tipoCirugia" value={formData.tipoCirugia} onChange={handleChange}><option value="AMBULATORIA">AMBULATORIA</option><option value="EMERGENCIA">EMERGENCIA</option><option value="MENOR">MENOR</option><option value="MAYOR">MAYOR</option></select></div>
               <div className="form-group"><label>Tipo de Anestesia</label><select name="tipoAnestesia" value={formData.tipoAnestesia} onChange={handleChange}><option value="LOCAL">LOCAL</option><option value="REGIONAL">REGIONAL</option><option value="GENERAL">GENERAL</option><option value="ASISTIDA">ASISTIDA</option></select></div>
-              <div className="form-group span-2" style={{ zIndex: 80 }}><label>Anestesiólogo</label><Select options={anestesiologosOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." onChange={(opt) => handleSelectChange('anestesiologo', opt)} /></div>
+              <div className="form-group span-2"><label>Anestesiólogo</label><Select options={anestesiologosOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." value={anestesiologosOptions.find(opt => opt.value === formData.anestesiologo) || null} onChange={(opt) => handleSelectChange('anestesiologo', opt)} /></div>
             </div>
           </div>
 
@@ -299,23 +340,23 @@ const Registro = () => {
             <h3 className="section-title">Programación</h3>
             <div className="form-grid">
               <div className="form-group"><label>Fecha de Cirugía (Obligatorio)</label><input type="date" name="fechaCirugia" value={formData.fechaCirugia} onChange={handleChange} /></div>
-              <div className="form-group" style={{ zIndex: 70 }}><label>Sala de Operación</label><Select options={salasOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." onChange={(opt) => handleSelectChange('salaOperacion', opt)} /></div>
-              <div className="form-group" style={{ zIndex: 60 }}><label>Hora Inicio</label><Select options={horasOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." onChange={(opt) => handleSelectChange('horaInicio', opt)} /></div>
-              <div className="form-group" style={{ zIndex: 50 }}><label>Hora Fin</label><Select options={horasFinOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." isDisabled={!formData.horaInicio} onChange={(opt) => handleSelectChange('horaFin', opt)} /></div>
+              <div className="form-group"><label>Sala de Operación</label><Select options={salasOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." value={salasOptions.find(opt => opt.value === formData.salaOperacion) || null} onChange={(opt) => handleSelectChange('salaOperacion', opt)} /></div>
+              <div className="form-group"><label>Hora Inicio</label><Select options={horasOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." value={horasOptions.find(opt => opt.value === formData.horaInicio) || null} onChange={(opt) => handleSelectChange('horaInicio', opt)} /></div>
+              <div className="form-group"><label>Hora Fin</label><Select options={horasFinOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." isDisabled={!formData.horaInicio} value={horasFinOptions.find(opt => opt.value === formData.horaFin) || null} onChange={(opt) => handleSelectChange('horaFin', opt)} /></div>
             </div>
           </div>
 
           <div className="form-section">
             <h3 className="section-title">Información Adicional</h3>
             <div className="form-grid">
-              <div className="form-group" style={{ zIndex: 40 }}><label>Procedencia</label><Select options={procedenciasOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." onChange={(opt) => handleSelectChange('procedencia', opt)} /></div>
-              <div className="form-group span-2" style={{ zIndex: 30 }}><label>Médico que Indica</label><Select options={medicosIndicaOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." onChange={(opt) => handleSelectChange('medicoIndica', opt)} /></div>
+              <div className="form-group"><label>Procedencia</label><Select options={procedenciasOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." value={procedenciasOptions.find(opt => opt.value === formData.procedencia) || null} onChange={(opt) => handleSelectChange('procedencia', opt)} /></div>
+              <div className="form-group span-2"><label>Médico que Indica</label><Select options={medicosIndicaOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." value={medicosIndicaOptions.find(opt => opt.value === formData.medicoIndica) || null} onChange={(opt) => handleSelectChange('medicoIndica', opt)} /></div>
               <div className="form-group"><label>Situación</label><select name="situacion" value={formData.situacion} onChange={handleChange}><option value="ACTIVO">ACTIVO</option><option value="INACTIVO">INACTIVO</option><option value="REALIZADA">REALIZADA</option><option value="SUSPENDIDA">SUSPENDIDA</option><option value="CANCELADA">CANCELADA</option></select></div>
               <div className="form-group span-4"><label>Observaciones</label><textarea name="observaciones" value={formData.observaciones} onChange={handleChange} rows="3"></textarea></div>
             </div>
           </div>
 
-          <div className="form-actions"><button type="submit" className="btn-guardar">GUARDAR CIRUGÍA</button></div>
+          <div className="form-actions"><button type="submit" className="btn-guardar">{id ? 'ACTUALIZAR CIRUGÍA' : 'GUARDAR CIRUGÍA'}</button></div>
         </form>
       </div>
     </div>
