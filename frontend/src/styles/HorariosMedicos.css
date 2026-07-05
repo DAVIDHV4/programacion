@@ -1,0 +1,79 @@
+.horarios-container {
+  padding: 20px;
+  background-color: #fdfaf6;
+  min-height: 100vh;
+}
+
+.horarios-content {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 30px;
+}
+
+.horarios-header {
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+.horarios-header h2 {
+  color: #0D3049;
+  margin: 0;
+}
+
+.filtros-section {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  border: 1px solid #e9ecef;
+}
+
+.filtros-grid {
+  display: flex;
+  gap: 15px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.filtro-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filtro-group label {
+  display: block;
+  font-size: 13px;
+  color: #0D3049;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.btn-container {
+  flex: 0 0 auto;
+}
+
+.btn-buscar-horario {
+  background-color: #B11A1A;
+  color: white;
+  border: none;
+  padding: 0 25px;
+  height: 40px;
+  border-radius: 50px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-buscar-horario:hover {
+  background-color: #8f1515;
+}
+
+.calendario-vacio {
+  text-align: center;
+  padding: 50px;
+  color: #8B8889;
+  border: 2px dashed #d9d9d9;
+  border-radius: 8px;
+}

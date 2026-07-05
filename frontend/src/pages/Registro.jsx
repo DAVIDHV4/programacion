@@ -115,6 +115,7 @@ const Registro = () => {
             const mapSituacion = { 'ACT': 'ACTIVO', 'INA': 'INACTIVO', 'REA': 'REALIZADA', 'SUS': 'SUSPENDIDA', 'CAN': 'CANCELADA' };
             setFormData(prev => ({
               ...prev,
+              usuario: d.UsuarioCreador || prev.usuario,
               sucursal: d.COD_SUCURSAL ? d.COD_SUCURSAL.toString() : '',
               especialidad: d.COD_ESPECIALIDAD ? d.COD_ESPECIALIDAD.toString() : '',
               medico: d.COD_MEDICO ? d.COD_MEDICO.toString() : '',

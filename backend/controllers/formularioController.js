@@ -202,6 +202,7 @@ exports.getCirugiaPorId = async (req, res) => {
             .query(`
                 SELECT 
                     C.*, 
+                    C.COD_USUARIO AS UsuarioCreador,
                     CONCAT(P.APE_PATERNO,' ', P.APE_MATERNO,' ', P.NOM_PACIENTE) AS pacienteNombre,
                     P.NUM_HC AS pacienteDni,
                     A.DES_ARTICULO_SERV AS cirugiaSearch
