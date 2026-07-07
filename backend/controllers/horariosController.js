@@ -205,3 +205,58 @@ exports.actualizarHorario = async (req, res) => {
         res.status(500).json({ success: false });
     }
 };
+exports.crearHorarioDia = async (req, res) => {
+    try {
+        const { sucursal, especialidad, medico, fechaHorario, horaInicio, horaFin, consultorio, medicoJefe, tipoAtencion, estado, tipoHorario } = req.body;
+        const pool = await poolPromise;
+
+        const fechaString = fechaHorario ? fechaHorario.replace(/-/g, '') : null;
+
+        await pool.request()
+            .input('medico', sql.Int, parseInt(medico))
+            .input('especialidad', sql.VarChar, especialidad)
+            .input('fechaStr', sql.VarChar, fechaString)
+            .input('horaInicio', sql.Int, parseInt(horaInicio))
+            .input('horaFin', sql.Int, parseInt(horaFin))
+            .input('fechaDate', sql.Date, fechaHorario)
+            .input('consultorio', sql.VarChar, consultorio || null)
+            .input('medicoJefe', sql.Int, medicoJefe ? parseInt(medicoJefe) : null)
+            .input('estado', sql.VarChar, estado)
+            .input('sucursal', sql.VarChar, sucursal)
+            .input('tipoAtencion', sql.VarChar, tipoAtencion)
+            .input('tipoHorario', sql.VarChar, tipoHorario)
+            .query(`
+                INSERT INTO CVE_MEDICOS_HORARIOS (
+                    COD_MEDICO, 
+                    COD_ESPECIALIDAD_HOR, 
+                    FECHA, 
+                    IDE_HORA_INICIO, 
+                    IDE_HORA_FINAL, 
+                    FEC_HORARIO, 
+                    NUM_CONSULTORIO, 
+                    COD_MEDICO_JEFE, 
+                    TIP_ESTADO, 
+                    COD_SUCURSAL, 
+                    TIP_ATENCION, 
+                    TIP_HORARIO
+                ) VALUES (
+                    @medico, 
+                    @especialidad, 
+                    @fechaStr, 
+                    @horaInicio, 
+                    @horaFin, 
+                    @fechaDate, 
+                    @consultorio, 
+                    @medicoJefe, 
+                    @estado, 
+                    @sucursal, 
+                    @tipoAtencion, 
+                    @tipoHorario
+                )
+            `);
+
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false });
+    }
+};
