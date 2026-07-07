@@ -265,3 +265,70 @@
     margin-bottom: 8px;
   }
 }
+
+/* --- NUEVOS BOTONES DE CABECERA --- */
+.horarios-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+  flex-wrap: wrap; /* Para que baje en celulares si no hay espacio */
+  gap: 15px;
+}
+
+.header-acciones {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-nuevo {
+  padding: 0 20px;
+  height: 38px;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Botón principal oscuro */
+.btn-nuevo-dia {
+  background-color: #0D3049;
+  color: white;
+  border: none;
+}
+
+.btn-nuevo-dia:hover {
+  background-color: #174b70;
+}
+
+/* Botón secundario delineado */
+.btn-nuevo-mes {
+  background-color: transparent;
+  color: #0D3049;
+  border: 2px solid #0D3049;
+}
+
+.btn-nuevo-mes:hover {
+  background-color: #f0f4f8;
+}
+
+/* Ajuste para móviles */
+@media (max-width: 768px) {
+  .horarios-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .header-acciones {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .btn-nuevo {
+    flex: 1; /* Para que ambos botones ocupen el 50% de la pantalla en celulares */
+    padding: 0 10px;
+  }
+}

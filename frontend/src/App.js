@@ -7,6 +7,7 @@ import Registro from './pages/Registro';
 import HorariosMedicos from './pages/HorariosMedicos';
 import EditarHorario from './pages/EditarHorario';
 import AtencionesMedicas from './pages/AtencionesMedicas';
+import NuevoHorarioDia from './pages/NuevoHorarioDia';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
           <Route path="/horarios" element={<HorariosMedicos />} />
           <Route path="/horarios/editar/:medico/:fecha/:horaInicio" element={<EditarHorario />} />
           <Route path="/atenciones" element={<AtencionesMedicas />} />
+          <Route path="/horarios/nuevo-dia" element={<NuevoHorarioDia />} />
         </Route>
       </Routes>
     </BrowserRouter>

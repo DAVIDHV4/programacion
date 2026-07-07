@@ -191,6 +191,20 @@ const HorariosMedicos = () => {
       <div className="horarios-content">
         <header className="horarios-header">
           <h2>Programación de Horarios Médicos</h2>
+          <div className="header-acciones">
+            <button 
+              className="btn-nuevo btn-nuevo-dia" 
+              onClick={() => alert('Aquí abriremos la ventana para 1 día')}
+            >
+              + TURNO POR DÍA
+            </button>
+            <button 
+              className="btn-nuevo btn-nuevo-mes" 
+              onClick={() => alert('Aquí abriremos la ventana para todo el mes')}
+            >
+              + TURNO POR MES
+            </button>
+          </div>
         </header>
 
         <div className="filtros-section">
