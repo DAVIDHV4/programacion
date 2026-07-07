@@ -1,0 +1,140 @@
+.editar-horario-container {
+  padding: 20px;
+  background-color: #fdfaf6;
+  min-height: 100vh;
+}
+
+.editar-horario-content {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 30px;
+}
+
+.editar-horario-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+.editar-horario-header h2 {
+  color: #0D3049;
+  margin: 0;
+}
+
+.btn-volver {
+  background-color: #8B8889;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 50px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.editar-horario-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 13px;
+  color: #0D3049;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.form-group input[type="date"],
+.input-text-field {
+  width: 100%;
+  border-radius: 50px;
+  border: 1px solid #8B8889;
+  padding: 2px 12px;
+  font-family: 'Noto Sans Display', Arial, sans-serif;
+  font-size: 13px;
+  min-height: 40px;
+  box-sizing: border-box;
+  color: #0D3049;
+  outline: none;
+}
+
+.form-group input:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+.form-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-guardar {
+  background-color: #B11A1A;
+  color: white;
+  border: none;
+  padding: 0 35px;
+  height: 45px;
+  border-radius: 50px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.loading-pantalla {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 100px);
+  background-color: #fdfaf6;
+  width: 100%;
+}
+
+.logo-animado {
+  width: 180px;
+  animation: latido 1.5s ease-in-out infinite;
+  margin-bottom: 15px;
+}
+
+.loading-pantalla p {
+  color: #0D3049;
+  font-weight: bold;
+  font-family: 'Noto Sans Display', Arial, sans-serif;
+  font-size: 16px;
+}
+
+@keyframes latido {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+@media (max-width: 768px) {
+  .editar-horario-container {
+    padding: 10px;
+  }
+  .editar-horario-content {
+    padding: 15px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .btn-guardar {
+    width: 100%;
+  }
+}

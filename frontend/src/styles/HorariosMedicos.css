@@ -32,14 +32,14 @@
 
 .filtros-grid {
   display: flex;
-  gap: 15px;
+  gap: 10px;
   align-items: flex-end;
   flex-wrap: wrap;
 }
 
 .filtro-group {
   flex: 1;
-  min-width: 200px;
+  min-width: 150px;
 }
 
 .filtro-group label {
@@ -48,6 +48,25 @@
   color: #0D3049;
   font-weight: bold;
   margin-bottom: 8px;
+}
+
+.input-anio {
+  width: 100%;
+  border-radius: 50px;
+  border: 1px solid #8B8889;
+  padding: 2px 12px;
+  font-family: 'Noto Sans Display', Arial, sans-serif;
+  font-size: 13px;
+  min-height: 40px;
+  box-sizing: border-box;
+  color: #0D3049;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-anio:focus {
+  border-color: #669BBB;
+  box-shadow: 0 0 0 1px #669BBB;
 }
 
 .btn-container {
@@ -76,4 +95,173 @@
   color: #8B8889;
   border: 2px dashed #d9d9d9;
   border-radius: 8px;
+}
+
+.calendario-wrapper {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.calendario-header-dias {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background-color: #004a8c;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  padding: 10px 0;
+}
+
+.calendario-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background-color: #e9ecef;
+  gap: 1px;
+}
+
+.celda-vacia {
+  background-color: #f8f9fa;
+}
+
+.celda-dia {
+  background-color: white;
+  min-height: 120px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+.header-celda {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 5px;
+}
+
+.dia-nombre-movil {
+  display: none;
+}
+
+.numero-dia {
+  font-weight: bold;
+  color: #0D3049;
+  font-size: 14px;
+}
+
+.turnos-contenedor {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.turnos-contenedor::-webkit-scrollbar {
+  width: 4px;
+}
+
+.turnos-contenedor::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+
+.turno-card {
+  background-color: #e3f2fd;
+  border-left: 3px solid #004a8c;
+  padding: 4px;
+  border-radius: 3px;
+  font-size: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.turno-card.turno-ausente {
+  background-color: #ffebee;
+  border-left: 3px solid #f44336;
+}
+
+.turno-hora {
+  font-weight: bold;
+  color: #004a8c;
+}
+
+.turno-ausente .turno-hora {
+  color: #d32f2f;
+}
+
+.turno-medico {
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 768px) {
+  .horarios-container {
+    padding: 10px;
+  }
+
+  .horarios-content {
+    padding: 15px;
+  }
+
+  .filtros-section {
+    padding: 15px;
+  }
+
+  .calendario-header-dias {
+    display: none;
+  }
+  
+  .calendario-grid {
+    display: flex;
+    flex-direction: column;
+    background-color: transparent;
+    gap: 15px;
+  }
+
+  .celda-vacia {
+    display: none;
+  }
+
+  .celda-dia {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 15px;
+    min-height: auto;
+  }
+
+  .header-celda {
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+  }
+
+  .dia-nombre-movil {
+    display: block;
+    font-weight: bold;
+    color: #8B8889;
+    font-size: 14px;
+    text-transform: uppercase;
+  }
+
+  .numero-dia {
+    font-size: 18px;
+    color: #B11A1A;
+  }
+
+  .turnos-contenedor {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .turno-card {
+    padding: 10px;
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
 }
