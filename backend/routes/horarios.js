@@ -8,5 +8,6 @@ router.get('/detalle/:medico/:fecha/:horaInicio', horariosController.getHorarioD
 router.get('/diccionarios-edicion/:especialidad', horariosController.getFiltrosEdicion);
 router.put('/actualizar/:medico/:fecha/:horaInicio', horariosController.actualizarHorario);
 router.post('/crear-dia', horariosController.crearHorarioDia);
+router.post('/mes', horariosController.crearHorarioMes);
 
 module.exports = router;

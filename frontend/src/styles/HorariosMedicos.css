@@ -134,8 +134,10 @@
 
 .header-celda {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 5px;
+  justify-content: center; /* Esto es lo que centra el número horizontalmente */
+  align-items: center;
+  padding: 5px 0;
+  width: 100%;
 }
 
 .dia-nombre-movil {
@@ -144,8 +146,9 @@
 
 .numero-dia {
   font-weight: bold;
-  color: #0D3049;
   font-size: 14px;
+  color: #0D3049;
+  margin: 0; 
 }
 
 .turnos-contenedor {
@@ -237,7 +240,7 @@
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #f0f0f0;
-    padding-bottom: 10px;
+    padding-bottom: 5px 10px;
     margin-bottom: 10px;
   }
 

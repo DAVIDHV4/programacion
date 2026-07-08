@@ -30,7 +30,17 @@ const customStyles = {
   placeholder: (provided) => ({ ...provided, color: '#8B8889' })
 };
 
-const NuevoHorarioDia = () => {
+const diasDeLaSemana = [
+  { index: 1, label: 'LUN' },
+  { index: 2, label: 'MAR' },
+  { index: 3, label: 'MIÉ' },
+  { index: 4, label: 'JUE' },
+  { index: 5, label: 'VIE' },
+  { index: 6, label: 'SÁB' },
+  { index: 0, label: 'DOM' }
+];
+
+const NuevoHorarioMes = () => {
   const navigate = useNavigate();
   const [guardando, setGuardando] = useState(false);
   const [cargando, setCargando] = useState(true);
@@ -45,7 +55,6 @@ const NuevoHorarioDia = () => {
       sucursal: filtros?.sede || '',
       especialidad: filtros?.especialidad || '',
       medico: '',
-      fechaHorario: new Date().toISOString().split('T')[0],
       horaInicio: '',
       horaFin: '',
       consultorio: '',
@@ -55,6 +64,15 @@ const NuevoHorarioDia = () => {
       tipoHorario: filtros?.tipoHorario || 'AMB'
     };
   });
+
+  const [fechaInicio, setFechaInicio] = useState(() => {
+    return new Date().toISOString().split('T')[0];
+  });
+  const [fechaFin, setFechaFin] = useState(() => {
+    return new Date().toISOString().split('T')[0];
+  });
+  
+  const [diasPatron, setDiasPatron] = useState([]);
 
   useEffect(() => {
     const cargarFiltrosBasicos = async () => {
@@ -93,6 +111,28 @@ const NuevoHorarioDia = () => {
     cargarOpcionesDependientes();
   }, [formData.especialidad]);
 
+  useEffect(() => {
+    if (!fechaInicio || !fechaFin || new Date(fechaInicio) > new Date(fechaFin)) {
+      setDiasPatron([]);
+      return;
+    }
+    const dias = [];
+    let actual = new Date(`${fechaInicio}T00:00:00`);
+    const final = new Date(`${fechaFin}T00:00:00`);
+    while (actual <= final) {
+      const yyyy = actual.getFullYear();
+      const mm = String(actual.getMonth() + 1).padStart(2, '0');
+      const dd = String(actual.getDate()).padStart(2, '0');
+      dias.push({
+        fecha: `${yyyy}-${mm}-${dd}`,
+        diaSemana: actual.getDay(),
+        incluido: false
+      });
+      actual.setDate(actual.getDate() + 1);
+    }
+    setDiasPatron(dias);
+  }, [fechaInicio, fechaFin]);
+
   const handleSelectChange = (name, selectedOption) => {
     setFormData(prev => {
       const newData = { ...prev, [name]: selectedOption ? selectedOption.value : '' };
@@ -111,22 +151,70 @@ const NuevoHorarioDia = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const toggleDiaSemana = (diaIndex) => {
+    const coincidentes = diasPatron.filter(d => d.diaSemana === diaIndex);
+    if (coincidentes.length === 0) return;
+    const activarTodos = !coincidentes.every(d => d.incluido);
+    setDiasPatron(prev =>
+      prev.map(d => (d.diaSemana === diaIndex ? { ...d, incluido: activarTodos } : d))
+    );
+  };
+
+  const isDiaSemanaActivo = (diaIndex) => {
+    const coincidentes = diasPatron.filter(d => d.diaSemana === diaIndex);
+    return coincidentes.length > 0 && coincidentes.every(d => d.incluido);
+  };
+
+  const toggleDiaIndividual = (fecha) => {
+    setDiasPatron(prev =>
+      prev.map(d => (d.fecha === fecha ? { ...d, incluido: !d.incluido } : d))
+    );
+  };
+
+  const limpiarSeleccionPatron = () => {
+    setDiasPatron(prev => prev.map(d => ({ ...d, incluido: false })));
+  };
+
+  const diasSeleccionadosCount = diasPatron.filter(d => d.incluido).length;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.sucursal || !formData.especialidad || !formData.medico || !formData.fechaHorario || !formData.horaInicio || !formData.horaFin || !formData.tipoHorario) {
-      toast.error("Complete los campos obligatorios");
+
+    if (!formData.sucursal || !formData.especialidad || !formData.medico || !formData.horaInicio || !formData.horaFin || !formData.tipoHorario) {
+      toast.error("Complete los campos obligatorios principales");
       return;
     }
 
+    if (!fechaInicio || !fechaFin) {
+      toast.error("Seleccione un rango de fechas");
+      return;
+    }
+    if (new Date(fechaInicio) > new Date(fechaFin)) {
+      toast.error("La fecha de inicio no puede ser mayor a la fecha fin");
+      return;
+    }
+    const fechasFinales = diasPatron.filter(d => d.incluido).map(d => d.fecha);
+    if (fechasFinales.length === 0) {
+      toast.error("Seleccione al menos un día en la lista de previsualización");
+      return;
+    }
+
+    const payload = {
+      ...formData,
+      fechasParaGuardar: fechasFinales
+    };
+
     setGuardando(true);
     try {
-      const res = await clienteAxios.post('/horarios/crear-dia', formData);
+      const res = await clienteAxios.post('/horarios/mes', payload);
       if (res.data.success) {
-        toast.success("Horario creado con éxito");
+        toast.success(`Se programaron ${fechasFinales.length} turno(s) correctamente`);
         navigate('/horarios');
+      } else {
+        toast.error(res.data.message || "No se pudo guardar la programación");
       }
     } catch (error) {
-      toast.error("Error al guardar el horario");
+      toast.error(error.response?.data?.message || "Error al guardar la programación");
     } finally {
       setGuardando(false);
     }
@@ -134,7 +222,6 @@ const NuevoHorarioDia = () => {
 
   const sedesOptions = globalOpciones.sedes?.map(s => ({ value: s.COD_SUCURSAL.toString(), label: s.NOM_SUCURSAL })) || [];
   const especialidadesOptions = globalOpciones.especialidades?.map(e => ({ value: e.COD_ESPECIALIDAD.toString(), label: e.DES_ESPECIALIDAD })) || [];
-  
   const medicosOptions = dependientesOpciones.medicos?.map(m => ({ value: m.COD_MEDICO.toString(), label: m.DES_AUXILIAR })) || [];
   const horasOptions = dependientesOpciones.horas?.map(h => ({ value: h.ide_hora.toString(), label: h.DES_HORA })) || [];
   const jefesOptions = dependientesOpciones.jefes?.map(j => ({ value: j.COD_MEDICO.toString(), label: j.DES_AUXILIAR })) || [];
@@ -168,65 +255,51 @@ const NuevoHorarioDia = () => {
   return (
     <div className="nuevo-horario-container">
       <div className="nuevo-horario-content">
-        <header className="nuevo-horario-header">
-          <h2>Programar Nuevo Horario</h2>
+        <header className="editar-horario-header">
+          <h2>Programar Horarios Múltiples (Mes)</h2>
           <button type="button" className="btn-volver" onClick={() => navigate('/horarios')}>Volver</button>
         </header>
 
-        <form onSubmit={handleSubmit} className="nuevo-horario-form">
+        <form onSubmit={handleSubmit} className="editar-horario-form">
           <div className="form-section">
-            <h3 className="section-title">DATOS PRINCIPALES</h3>
+            <h3 className="section-title">Datos Principales</h3>
             <div className="form-grid">
               <div className="form-group">
                 <label>Sede</label>
                 <Select options={sedesOptions} styles={customStyles} value={sedesOptions.find(opt => opt.value === formData.sucursal) || null} onChange={(opt) => handleSelectChange('sucursal', opt)} />
               </div>
-
               <div className="form-group">
                 <label>Especialidad</label>
                 <Select options={especialidadesOptions} styles={customStyles} value={especialidadesOptions.find(opt => opt.value === formData.especialidad) || null} onChange={(opt) => handleSelectChange('especialidad', opt)} />
               </div>
-
               <div className="form-group">
                 <label>Médico</label>
                 <Select options={medicosOptions} styles={customStyles} value={medicosOptions.find(opt => opt.value === formData.medico) || null} onChange={(opt) => handleSelectChange('medico', opt)} isDisabled={!formData.especialidad} />
               </div>
-
               <div className="form-group">
                 <label>Médico Jefe</label>
                 <Select options={jefesOptions} styles={customStyles} value={jefesOptions.find(opt => opt.value === formData.medicoJefe) || null} onChange={(opt) => handleSelectChange('medicoJefe', opt)} isClearable isDisabled={!formData.especialidad} />
               </div>
-
-              <div className="form-group">
-                <label>Fecha</label>
-                <input type="date" name="fechaHorario" value={formData.fechaHorario} onChange={handleChangeInput} />
-              </div>
-
               <div className="form-group">
                 <label>Hora Inicio</label>
                 <Select options={horasOptions} styles={customStyles} value={horasOptions.find(opt => opt.value === formData.horaInicio) || null} onChange={(opt) => handleSelectChange('horaInicio', opt)} isDisabled={!formData.especialidad} />
               </div>
-
               <div className="form-group">
                 <label>Hora Fin</label>
                 <Select options={horasOptions} styles={customStyles} value={horasOptions.find(opt => opt.value === formData.horaFin) || null} onChange={(opt) => handleSelectChange('horaFin', opt)} isDisabled={!formData.especialidad} />
               </div>
-
               <div className="form-group">
                 <label>Consultorio</label>
                 <input type="text" name="consultorio" className="input-text-field" value={formData.consultorio} onChange={handleChangeInput} />
               </div>
-
               <div className="form-group">
                 <label>Tipo de Atención</label>
                 <Select options={tipoAtencionOptions} styles={customStyles} value={tipoAtencionOptions.find(opt => opt.value === formData.tipoAtencion) || null} onChange={(opt) => handleSelectChange('tipoAtencion', opt)} />
               </div>
-
               <div className="form-group">
                 <label>Estado</label>
                 <Select options={estadoOptions} styles={customStyles} value={estadoOptions.find(opt => opt.value === formData.estado) || null} onChange={(opt) => handleSelectChange('estado', opt)} />
               </div>
-
               <div className="form-group">
                 <label>Tipo Horario</label>
                 <Select options={tipoHorarioOptions} styles={customStyles} value={tipoHorarioOptions.find(opt => opt.value === formData.tipoHorario) || null} onChange={(opt) => handleSelectChange('tipoHorario', opt)} />
@@ -234,9 +307,81 @@ const NuevoHorarioDia = () => {
             </div>
           </div>
 
+          <div className="form-section mt-20">
+            <h3 className="section-title">Días a Programar</h3>
+            <div className="tab-content">
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Desde Fecha</label>
+                  <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label>Hasta Fecha</label>
+                  <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="dias-semana-container">
+                <label>Marcar por día de semana dentro del rango:</label>
+                <div className="dias-semana-grid">
+                  {diasDeLaSemana.map((dia) => (
+                    <button
+                      type="button"
+                      key={dia.index}
+                      className={`dia-btn ${isDiaSemanaActivo(dia.index) ? 'seleccionado' : ''}`}
+                      onClick={() => toggleDiaSemana(dia.index)}
+                      disabled={diasPatron.length === 0}
+                    >
+                      {dia.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {diasPatron.length === 0 ? (
+                <p className="chips-vacio" style={{ marginTop: '15px' }}>
+                  Elija un rango de fechas para ver los días disponibles.
+                </p>
+              ) : (
+                <div className="dias-preview-container">
+                  <div className="dias-preview-header">
+                    <span className="contador-dias">
+                      {diasSeleccionadosCount} de {diasPatron.length} día(s) seleccionados
+                    </span>
+                    <button type="button" className="btn-limpiar-preview" onClick={limpiarSeleccionPatron}>
+                      Limpiar
+                    </button>
+                  </div>
+                  <div className="dias-preview-lista">
+                    {diasPatron.map((dia) => {
+                      const nombreDia = diasDeLaSemana.find(d => d.index === dia.diaSemana)?.label || '';
+                      const [, mm, dd] = dia.fecha.split('-');
+                      return (
+                        <div key={dia.fecha} className={`dia-preview-row ${dia.incluido ? 'activo' : ''}`}>
+                          <div className="dia-preview-info">
+                            <span className="dia-preview-fecha">{dd}/{mm}</span>
+                            <span className="dia-preview-nombre">{nombreDia}</span>
+                          </div>
+                          <label className="switch">
+                            <input
+                              type="checkbox"
+                              checked={dia.incluido}
+                              onChange={() => toggleDiaIndividual(dia.fecha)}
+                            />
+                            <span className="switch-slider"></span>
+                          </label>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="form-actions">
             <button type="submit" className="btn-guardar" disabled={guardando}>
-              {guardando ? 'GUARDANDO...' : 'GUARDAR HORARIO'}
+              {guardando ? 'GUARDANDO...' : 'GUARDAR TODO EL MES'}
             </button>
           </div>
         </form>
@@ -245,4 +390,4 @@ const NuevoHorarioDia = () => {
   );
 };
 
-export default NuevoHorarioDia;
+export default NuevoHorarioMes;

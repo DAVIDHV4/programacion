@@ -1,16 +1,20 @@
+/* CONTENEDOR PRINCIPAL DE EDICIÓN (Fondo original claro) */
 .editar-horario-container {
   padding: 20px;
-  background-color: #fdfaf6;
+  background-color: #f8f9fa; 
   min-height: 100vh;
 }
 
 .editar-horario-content {
   background-color: white;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
+/* CABECERA */
 .editar-horario-header {
   display: flex;
   justify-content: space-between;
@@ -23,6 +27,7 @@
 .editar-horario-header h2 {
   color: #0D3049;
   margin: 0;
+  font-weight: bold;
 }
 
 .btn-volver {
@@ -35,10 +40,24 @@
   cursor: pointer;
 }
 
+/* ESTRUCTURA DEL FORMULARIO */
 .editar-horario-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.form-section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  color: #0D3049;
+  font-size: 16px;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+  font-weight: bold;
 }
 
 .form-grid {
@@ -47,6 +66,7 @@
   gap: 20px;
 }
 
+/* INPUTS Y LABELS */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -71,13 +91,16 @@
   box-sizing: border-box;
   color: #0D3049;
   outline: none;
+  background-color: white;
 }
 
 .form-group input:disabled {
   background-color: #e9ecef;
   cursor: not-allowed;
+  color: #6c757d;
 }
 
+/* BOTONERA INFERIOR */
 .form-actions {
   margin-top: 20px;
   display: flex;
@@ -95,13 +118,13 @@
   cursor: pointer;
 }
 
+/* PANTALLA DE CARGA (Compartida si la vista de edición la usa) */
 .loading-pantalla {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - 100px);
-  background-color: #fdfaf6;
   width: 100%;
 }
 
@@ -124,17 +147,10 @@
   100% { transform: scale(0.95); opacity: 0.8; }
 }
 
+/* RESPONSIVE */
 @media (max-width: 768px) {
-  .editar-horario-container {
-    padding: 10px;
-  }
-  .editar-horario-content {
-    padding: 15px;
-  }
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-  .btn-guardar {
-    width: 100%;
-  }
+  .editar-horario-container { padding: 10px; }
+  .editar-horario-content { padding: 15px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .btn-guardar { width: 100%; }
 }

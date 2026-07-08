@@ -71,15 +71,31 @@ const HorariosMedicos = () => {
   });
 
   useEffect(() => {
-    const cargarFiltros = async () => {
+    const inicializarComponente = async () => {
+      // 1. Cargar las listas desplegables
       try {
-        const res = await clienteAxios.get('/horarios/filtros');
-        if (res.data.success) {
-          setOpciones(res.data.data);
+        const resFiltros = await clienteAxios.get('/horarios/filtros');
+        if (resFiltros.data.success) {
+          setOpciones(resFiltros.data.data);
         }
       } catch (error) {}
+
+      // 2. Auto-refrescar los datos si ya existía una búsqueda previa
+      const filtrosGuardados = getInitialFiltrosAplicados();
+      const yaBuscado = getInitialBusqueda();
+      
+      if (yaBuscado && filtrosGuardados) {
+        try {
+          const resHorarios = await clienteAxios.post('/horarios/buscar', filtrosGuardados);
+          if (resHorarios.data.success) {
+            setHorarios(resHorarios.data.data);
+            sessionStorage.setItem('horariosData', JSON.stringify(resHorarios.data.data));
+          }
+        } catch (error) {}
+      }
     };
-    cargarFiltros();
+
+    inicializarComponente();
   }, []);
 
   useEffect(() => {
@@ -194,13 +210,13 @@ const HorariosMedicos = () => {
           <div className="header-acciones">
             <button 
               className="btn-nuevo btn-nuevo-dia" 
-              onClick={() => alert('Aquí abriremos la ventana para 1 día')}
+              onClick={() => navigate('/horarios/nuevo-dia')}
             >
               + TURNO POR DÍA
             </button>
             <button 
               className="btn-nuevo btn-nuevo-mes" 
-              onClick={() => alert('Aquí abriremos la ventana para todo el mes')}
+              onClick={() => navigate('/horarios/nuevo-mes')}
             >
               + TURNO POR MES
             </button>

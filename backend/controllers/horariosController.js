@@ -260,3 +260,63 @@ exports.crearHorarioDia = async (req, res) => {
         res.status(500).json({ success: false });
     }
 };
+exports.crearHorarioMes = async (req, res) => {
+    try {
+        const { sucursal, especialidad, medico, fechasParaGuardar, horaInicio, horaFin, consultorio, medicoJefe, tipoAtencion, estado, tipoHorario } = req.body;
+        const pool = await poolPromise;
+
+        // Recorremos cada fecha seleccionada en el frontend
+        for (const fechaHorario of fechasParaGuardar) {
+            // Convertimos la fecha "2026-07-07" a "20260707"
+            const fechaString = fechaHorario.replace(/-/g, '');
+
+            await pool.request()
+                .input('medico', sql.Int, parseInt(medico))
+                .input('especialidad', sql.VarChar, especialidad)
+                .input('fechaStr', sql.VarChar, fechaString)
+                .input('horaInicio', sql.Int, parseInt(horaInicio))
+                .input('horaFin', sql.Int, parseInt(horaFin))
+                .input('fechaDate', sql.Date, fechaHorario)
+                .input('consultorio', sql.VarChar, consultorio || null)
+                .input('medicoJefe', sql.Int, medicoJefe ? parseInt(medicoJefe) : null)
+                .input('estado', sql.VarChar, estado)
+                .input('sucursal', sql.VarChar, sucursal)
+                .input('tipoAtencion', sql.VarChar, tipoAtencion)
+                .input('tipoHorario', sql.VarChar, tipoHorario)
+                .query(`
+                    INSERT INTO CVE_MEDICOS_HORARIOS (
+                        COD_MEDICO, 
+                        COD_ESPECIALIDAD_HOR, 
+                        FECHA, 
+                        IDE_HORA_INICIO, 
+                        IDE_HORA_FINAL, 
+                        FEC_HORARIO, 
+                        NUM_CONSULTORIO, 
+                        COD_MEDICO_JEFE, 
+                        TIP_ESTADO, 
+                        COD_SUCURSAL, 
+                        TIP_ATENCION, 
+                        TIP_HORARIO
+                    ) VALUES (
+                        @medico, 
+                        @especialidad, 
+                        @fechaStr, 
+                        @horaInicio, 
+                        @horaFin, 
+                        @fechaDate, 
+                        @consultorio, 
+                        @medicoJefe, 
+                        @estado, 
+                        @sucursal, 
+                        @tipoAtencion, 
+                        @tipoHorario
+                    )
+                `);
+        }
+
+        // Respondemos que todo salió bien solo cuando termina el bucle
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, message: "Error al guardar la programación masiva" });
+    }
+};
