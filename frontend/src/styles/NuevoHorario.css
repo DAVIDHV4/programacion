@@ -299,3 +299,75 @@ input:checked + .switch-slider:before {
   .form-grid { grid-template-columns: 1fr; }
   .btn-guardar { width: 100%; }
 }
+
+/* MODAL DE CONFIRMACIÓN PERSONALIZADO */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(13, 48, 73, 0.8); /* Tu azul corporativo como fondo oscuro translúcido */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-confirmacion {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  animation: modalAparecer 0.2s ease-out;
+}
+
+.modal-confirmacion h3 {
+  color: #0D3049;
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 20px;
+}
+
+.modal-confirmacion p {
+  color: #8B8889;
+  font-size: 14px;
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+.modal-botones {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.btn-cancelar-modal {
+  background-color: white;
+  color: #0D3049;
+  border: 2px solid #0D3049;
+  padding: 10px 25px;
+  border-radius: 50px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancelar-modal:hover {
+  background-color: #f0f4f8;
+}
+
+.btn-salir-modal {
+  background-color: #B11A1A;
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 50px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+@keyframes modalAparecer {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}

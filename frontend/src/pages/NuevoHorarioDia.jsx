@@ -34,6 +34,7 @@ const NuevoHorarioDia = () => {
   const navigate = useNavigate();
   const [guardando, setGuardando] = useState(false);
   const [cargando, setCargando] = useState(true);
+  const [mostrarModalSalir, setMostrarModalSalir] = useState(false);
 
   const [globalOpciones, setGlobalOpciones] = useState({ sedes: [], especialidades: [] });
   const [dependientesOpciones, setDependientesOpciones] = useState({ medicos: [], horas: [], jefes: [] });
@@ -170,7 +171,7 @@ const NuevoHorarioDia = () => {
       <div className="nuevo-horario-content">
         <header className="nuevo-horario-header">
           <h2>Programar Nuevo Horario</h2>
-          <button type="button" className="btn-volver" onClick={() => navigate('/horarios')}>Volver</button>
+          <button type="button" className="btn-volver" onClick={() => setMostrarModalSalir(true)}>Volver</button>
         </header>
 
         <form onSubmit={handleSubmit} className="nuevo-horario-form">
@@ -241,6 +242,19 @@ const NuevoHorarioDia = () => {
           </div>
         </form>
       </div>
+
+      {mostrarModalSalir && (
+        <div className="modal-overlay">
+          <div className="modal-confirmacion">
+            <h3>¿Seguro que deseas salir?</h3>
+            <p>Si sales ahora, todos los datos que no hayas guardado se perderán.</p>
+            <div className="modal-botones">
+              <button type="button" className="btn-cancelar-modal" onClick={() => setMostrarModalSalir(false)}>Cancelar</button>
+              <button type="button" className="btn-salir-modal" onClick={() => navigate('/horarios')}>Sí, salir</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
