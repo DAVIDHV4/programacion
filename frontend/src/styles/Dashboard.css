@@ -181,3 +181,171 @@
     width: 100%;
   }
 }
+
+
+
+.fila-editable {
+  cursor: pointer;
+}
+
+
+.fila-bloqueada {
+  cursor: not-allowed;
+  background-color: #fafafa;
+  color: #9a9a9a;
+}
+
+.fila-bloqueada:hover {
+  background-color: #f2f2f2;
+}
+
+.candado {
+  margin-right: 6px;
+  font-size: 12px;
+}
+/* ============================================================
+   AGREGAR TODO ESTO AL FINAL DE Dashboard.css
+   ============================================================ */
+
+/* --- Filas de tabla según empresa (escritorio) --- */
+.fila-editable {
+  cursor: pointer;
+}
+
+.fila-bloqueada {
+  cursor: not-allowed;
+  background-color: #fafafa;
+  color: #9a9a9a;
+}
+
+.fila-bloqueada:hover {
+  background-color: #f2f2f2;
+}
+
+.candado {
+  margin-right: 6px;
+  font-size: 12px;
+}
+
+/* ============================================================
+   ALTERNANCIA TABLA (escritorio) / TARJETAS (móvil)
+   ============================================================ */
+
+/* Por defecto (escritorio): tabla visible, tarjetas ocultas */
+.vista-escritorio {
+  display: block;
+}
+
+.vista-movil {
+  display: none;
+}
+
+/* En móvil: se invierte */
+@media (max-width: 768px) {
+  .vista-escritorio {
+    display: none;
+  }
+
+  .vista-movil {
+    display: block;
+  }
+}
+
+/* ============================================================
+   TARJETAS DE CIRUGÍA (móvil)
+   ============================================================ */
+
+.cirugia-card {
+  position: relative;
+  background-color: white;
+  border: 1px solid #e9ecef;
+  border-left: 4px solid #B11A1A;   /* franja de color = editable */
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: background-color 0.15s;
+}
+
+.card-editable {
+  cursor: pointer;
+}
+
+.card-editable:active {
+  background-color: #fdf3f3;
+}
+
+/* Tarjeta bloqueada: franja gris, atenuada */
+.card-bloqueada {
+  cursor: not-allowed;
+  border-left-color: #b0b0b0;
+  background-color: #fafafa;
+  opacity: 0.75;
+}
+
+/* Nivel 1: Paciente — el dato más grande y prominente */
+.card-paciente {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0D3049;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+/* Nivel 2: Cirugía */
+.card-cirugia {
+  font-size: 14px;
+  color: #B11A1A;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+
+/* Nivel 3: Metadatos (médico + especialidad) */
+.card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+}
+
+.card-medico {
+  font-size: 13px;
+  color: #0D3049;
+  font-weight: 500;
+}
+
+.card-especialidad {
+  font-size: 12px;
+  color: #8B8889;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Nivel 4: Fecha y hora en franja inferior */
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+  font-size: 12px;
+  color: #669BBB;
+  font-weight: 600;
+}
+
+/* Empresa ajena (solo aparece en tarjetas bloqueadas) */
+.card-empresa {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #9a9a9a;
+  font-style: italic;
+  text-align: right;
+}
+
+.sin-resultados-movil {
+  text-align: center;
+  padding: 30px 15px;
+  color: #8B8B89;
+  font-size: 14px;
+}

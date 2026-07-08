@@ -64,6 +64,8 @@ const Registro = () => {
   const [formData, setFormData] = useState({
     sucursal: '',
     usuario: '',
+    // En modo NUEVO queda la fecha de hoy. En modo EDITAR se sobrescribe
+    // más abajo con la fecha real de creación de la cirugía (d.FECHA).
     fechaActual: new Date().toLocaleDateString('es-PE'),
     especialidad: '',
     medico: '',
@@ -109,35 +111,41 @@ const Registro = () => {
     if (id) {
       const fetchCirugia = async () => {
         try {
-          const res = await clienteAxios.get(`/formulario/cirugia/${id}`);
+          const res = await clienteAxios.get(`/formulario/cirugia/${id}?t=${new Date().getTime()}`);
           if (res.data.success) {
             const d = res.data.data;
             const mapSituacion = { 'ACT': 'ACTIVO', 'INA': 'INACTIVO', 'REA': 'REALIZADA', 'SUS': 'SUSPENDIDA', 'CAN': 'CANCELADA' };
+
             setFormData(prev => ({
               ...prev,
-              usuario: d.UsuarioCreador || prev.usuario,
-              sucursal: d.COD_SUCURSAL ? d.COD_SUCURSAL.toString() : '',
-              especialidad: d.COD_ESPECIALIDAD ? d.COD_ESPECIALIDAD.toString() : '',
-              medico: d.COD_MEDICO ? d.COD_MEDICO.toString() : '',
+              usuario: (d.UsuarioCreador ? d.UsuarioCreador.toString().trim() : '') || prev.usuario,
+              // Fecha de creación de la cirugía (columna FECHA de CVE_PROG_CIRUGIA).
+              // Se usa UTC para no restar un día por la zona horaria de Lima.
+              fechaActual: d.FECHA
+                ? new Date(d.FECHA).toLocaleDateString('es-PE', { timeZone: 'UTC' })
+                : prev.fechaActual,
+              sucursal: d.COD_SUCURSAL ? d.COD_SUCURSAL.toString().trim() : '',
+              especialidad: d.COD_ESPECIALIDAD ? d.COD_ESPECIALIDAD.toString().trim() : '',
+              medico: d.COD_MEDICO ? d.COD_MEDICO.toString().trim() : '',
               ingresoClinica: d.TIP_INGRESO === 'S' ? 'SI' : 'NO',
-              pacienteDni: d.pacienteDni || '',
-              pacienteNombre: d.pacienteNombre || '',
-              codPaciente: d.COD_PACIENTE_CIRUGIA || '',
-              tipoCirugia: d.TIP_CIRUGIA || 'AMBULATORIA',
-              anestesiologo: d.COD_MEDICO_ANESTECIOLOGO ? d.COD_MEDICO_ANESTECIOLOGO.toString() : '',
-              tipoAnestesia: d.TIP_ANESTECIA || 'LOCAL',
-              cirugiaSearch: d.cirugiaSearch || '',
-              codCirugia: d.COD_ARTICULO_SERV_PROCEDIMIENTO || '',
-              codEmpresa: d.COD_EMPRESA_PROCEDIMIENTO || '',
-              codFamilia: d.COD_FAMILIA_PROCEDIMIENTO || '',
+              pacienteDni: d.pacienteDni ? d.pacienteDni.toString().trim() : '',
+              pacienteNombre: d.pacienteNombre ? d.pacienteNombre.trim() : '',
+              codPaciente: d.COD_PACIENTE_CIRUGIA ? d.COD_PACIENTE_CIRUGIA.toString().trim() : '',
+              tipoCirugia: d.TIP_CIRUGIA ? d.TIP_CIRUGIA.trim() : 'AMBULATORIA',
+              anestesiologo: d.COD_MEDICO_ANESTECIOLOGO ? d.COD_MEDICO_ANESTECIOLOGO.toString().trim() : '',
+              tipoAnestesia: d.TIP_ANESTECIA ? d.TIP_ANESTECIA.trim() : 'LOCAL',
+              cirugiaSearch: d.cirugiaSearch ? d.cirugiaSearch.trim() : '',
+              codCirugia: d.COD_ARTICULO_SERV_PROCEDIMIENTO ? d.COD_ARTICULO_SERV_PROCEDIMIENTO.toString().trim() : '',
+              codEmpresa: d.COD_EMPRESA_PROCEDIMIENTO ? d.COD_EMPRESA_PROCEDIMIENTO.toString().trim() : '',
+              codFamilia: d.COD_FAMILIA_PROCEDIMIENTO ? d.COD_FAMILIA_PROCEDIMIENTO.toString().trim() : '',
               observaciones: d.DES_OBSERVACION || '',
               fechaCirugia: d.FEC_CIRUGIA ? d.FEC_CIRUGIA.split('T')[0] : '',
-              salaOperacion: d.COD_HABITACION ? d.COD_HABITACION.toString() : '',
-              horaInicio: d.HORA_INI ? d.HORA_INI.toString() : '',
-              horaFin: d.HORA_FIN ? d.HORA_FIN.toString() : '',
+              salaOperacion: d.COD_HABITACION ? d.COD_HABITACION.toString().trim() : '',
+              horaInicio: d.HORA_INI ? d.HORA_INI.toString().trim() : '',
+              horaFin: d.HORA_FIN ? d.HORA_FIN.toString().trim() : '',
               situacion: mapSituacion[d.TIP_SITUACION] || 'ACTIVO',
-              procedencia: d.COD_PROCEDENCIA || '',
-              medicoIndica: d.COD_MEDICO_INDICA ? d.COD_MEDICO_INDICA.toString() : ''
+              procedencia: d.COD_PROCEDENCIA ? d.COD_PROCEDENCIA.toString().trim() : '',
+              medicoIndica: d.COD_MEDICO_INDICA ? d.COD_MEDICO_INDICA.toString().trim() : ''
             }));
           }
         } catch (error) {
@@ -213,9 +221,9 @@ const Registro = () => {
   };
 
   const seleccionarCirugia = (cir) => {
-    setFormData(prev => ({ 
-      ...prev, 
-      cirugiaSearch: cir.DES_ARTICULO_SERV, 
+    setFormData(prev => ({
+      ...prev,
+      cirugiaSearch: cir.DES_ARTICULO_SERV,
       codCirugia: cir.COD_ARTICULO_SERV,
       codEmpresa: cir.COD_EMPRESA,
       codFamilia: cir.COD_FAMILIA
@@ -223,18 +231,18 @@ const Registro = () => {
     setCirugiasResultados([]);
   };
 
-  const sedesOptions = diccionarios.sedes?.map(s => ({ value: s.COD_SUCURSAL.toString(), label: s.NOM_SUCURSAL })) || [];
-  const especialidadesOptions = diccionarios.especialidades?.map(e => ({ value: e.COD_ESPECIALIDAD.toString(), label: e.DES_ESPECIALIDAD })) || [];
-  const medicosOptions = medicos?.map(m => ({ value: m.cod_medico.toString(), label: m.DES_AUXILIAR })) || [];
-  const anestesiologosOptions = diccionarios.anestesiologos?.map(a => ({ value: a.cod_medico.toString(), label: a.DES_AUXILIAR })) || [];
-  const salasOptions = diccionarios.salas?.map(s => ({ value: s.COD_HABITACION.toString(), label: s.DES_HABITACION })) || [];
-  const procedenciasOptions = diccionarios.procedencias?.map(p => ({ value: p.DES_CORTA.toString(), label: p.DES_LARGA })) || [];
-  const medicosIndicaOptions = diccionarios.medicosIndica?.map(m => ({ value: m.cod_medico.toString(), label: m.DES_AUXILIAR })) || [];
-  const horasOptions = diccionarios.horas?.map(h => ({ value: h.IDE_HORA.toString(), label: h.DES_HORA })) || [];
+  const sedesOptions = diccionarios.sedes?.map(s => ({ value: s.COD_SUCURSAL.toString().trim(), label: s.NOM_SUCURSAL })) || [];
+  const especialidadesOptions = diccionarios.especialidades?.map(e => ({ value: e.COD_ESPECIALIDAD.toString().trim(), label: e.DES_ESPECIALIDAD })) || [];
+  const medicosOptions = medicos?.map(m => ({ value: m.cod_medico.toString().trim(), label: m.DES_AUXILIAR })) || [];
+  const anestesiologosOptions = diccionarios.anestesiologos?.map(a => ({ value: a.cod_medico.toString().trim(), label: a.DES_AUXILIAR })) || [];
+  const salasOptions = diccionarios.salas?.map(s => ({ value: s.COD_HABITACION.toString().trim(), label: s.DES_HABITACION })) || [];
+  const procedenciasOptions = diccionarios.procedencias?.map(p => ({ value: p.DES_CORTA.toString().trim(), label: p.DES_LARGA })) || [];
+  const medicosIndicaOptions = diccionarios.medicosIndica?.map(m => ({ value: m.cod_medico.toString().trim(), label: m.DES_AUXILIAR })) || [];
+  const horasOptions = diccionarios.horas?.map(h => ({ value: h.IDE_HORA.toString().trim(), label: h.DES_HORA })) || [];
   const horasFinOptions = diccionarios.horas?.filter(h => {
     if (!formData.horaInicio) return true;
     return parseInt(h.IDE_HORA) > parseInt(formData.horaInicio);
-  }).map(h => ({ value: h.IDE_HORA.toString(), label: h.DES_HORA })) || [];
+  }).map(h => ({ value: h.IDE_HORA.toString().trim(), label: h.DES_HORA })) || [];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -246,11 +254,11 @@ const Registro = () => {
     }
 
     setGuardando(true);
-    
+
     try {
       const url = id ? `/formulario/actualizar/${id}` : '/formulario/guardar';
       const method = id ? 'put' : 'post';
-      
+
       const res = await clienteAxios[method](url, formData);
       if (res.data.success) {
         toast.success(`¡Cirugía ${id ? 'actualizada' : 'programada'} con éxito!`, {
@@ -259,8 +267,8 @@ const Registro = () => {
         });
         navigate('/dashboard');
       }
-    } catch (error) { 
-      toast.error(`Error al ${id ? 'actualizar' : 'guardar'}, intente de nuevo`); 
+    } catch (error) {
+      toast.error(`Error al ${id ? 'actualizar' : 'guardar'}, intente de nuevo`);
     } finally {
       setGuardando(false);
     }
@@ -283,7 +291,10 @@ const Registro = () => {
                 <Select options={sedesOptions} styles={customStyles} filterOption={customFilter} placeholder="Seleccione..." value={sedesOptions.find(opt => opt.value === formData.sucursal) || null} onChange={(opt) => handleSelectChange('sucursal', opt)} />
               </div>
               <div className="form-group"><label>Usuario</label><input type="text" value={formData.usuario} disabled /></div>
-              <div className="form-group"><label>Fecha Actual</label><input type="text" value={formData.fechaActual} disabled /></div>
+              <div className="form-group">
+                <label>{id ? 'Fecha de Creación' : 'Fecha de Registro'}</label>
+                <input type="text" value={formData.fechaActual} disabled />
+              </div>
             </div>
           </div>
 
@@ -363,8 +374,8 @@ const Registro = () => {
           </div>
 
           <div className="form-actions">
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn-guardar"
               disabled={guardando}
               style={{ opacity: guardando ? 0.7 : 1, cursor: guardando ? 'not-allowed' : 'pointer' }}
@@ -374,6 +385,7 @@ const Registro = () => {
           </div>
         </form>
       </div>
+      <Toaster />
     </div>
   );
 };
