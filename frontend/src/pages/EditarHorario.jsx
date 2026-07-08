@@ -35,6 +35,7 @@ const EditarHorario = () => {
   const navigate = useNavigate();
   const [guardando, setGuardando] = useState(false);
   const [cargando, setCargando] = useState(true);
+  const [mostrarModalSalir, setMostrarModalSalir] = useState(false);
 
   const [globalOpciones, setGlobalOpciones] = useState({ sedes: [], especialidades: [] });
   const [edicionOpciones, setEdicionOpciones] = useState({ medicos: [], horas: [], jefes: [] });
@@ -65,7 +66,9 @@ const EditarHorario = () => {
           setGlobalOpciones({ sedes: sedesData, especialidades: espData });
         }
 
-        const resDetalle = await clienteAxios.get(`/horarios/detalle/${medico}/${fecha}/${horaInicio}`);
+        // CORRECCIÓN 1: Agregar Timestamp dinámico para evadir la caché del navegador
+        const resDetalle = await clienteAxios.get(`/horarios/detalle/${medico}/${fecha}/${horaInicio}?t=${new Date().getTime()}`);
+        
         if (resDetalle.data.success) {
           const d = resDetalle.data.data;
           
@@ -116,6 +119,10 @@ const EditarHorario = () => {
       const res = await clienteAxios.put(`/horarios/actualizar/${medico}/${fecha}/${horaInicio}`, formData);
       if (res.data.success) {
         toast.success("Horario actualizado con éxito");
+        
+        // CORRECCIÓN 2: Limpiar el Storage para forzar al calendario a traer datos nuevos
+        sessionStorage.removeItem('horariosData');
+        
         navigate('/horarios');
       }
     } catch (error) {
@@ -163,7 +170,7 @@ const EditarHorario = () => {
       <div className="editar-horario-content">
         <header className="editar-horario-header">
           <h2>Editar Horario Médico</h2>
-          <button type="button" className="btn-volver" onClick={() => navigate('/horarios')}>Volver</button>
+          <button type="button" className="btn-volver" onClick={() => setMostrarModalSalir(true)}>Volver</button>
         </header>
 
         <form onSubmit={handleSubmit} className="editar-horario-form">
@@ -235,6 +242,19 @@ const EditarHorario = () => {
           </div>
         </form>
       </div>
+
+      {mostrarModalSalir && (
+        <div className="modal-overlay">
+          <div className="modal-confirmacion">
+            <h3>¿Seguro que deseas salir?</h3>
+            <p>Si sales ahora, todos los cambios que no hayas guardado se perderán.</p>
+            <div className="modal-botones">
+              <button type="button" className="btn-cancelar-modal" onClick={() => setMostrarModalSalir(false)}>Cancelar</button>
+              <button type="button" className="btn-salir-modal" onClick={() => navigate('/horarios')}>Sí, salir</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
