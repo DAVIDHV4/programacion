@@ -4,14 +4,13 @@ import clienteAxios from '../config/axios';
 import toast, { Toaster } from 'react-hot-toast';
 import '../styles/Dashboard.css';
 
-// Empresa propietaria de esta aplicación. Solo estas cirugías son editables.
-// Debe coincidir EXACTAMENTE con el texto de la columna EMPRESA de la vista.
 const EMPRESA_PROPIA = 'CLINICA LA LUZ SAC';
 
 const Dashboard = () => {
   const [cirugias, setCirugias] = useState([]);
   const [busqueda, setBusqueda] = useState('');
   const [mes, setMes] = useState(new Date().getMonth() + 1);
+  const [cargando, setCargando] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,6 +22,8 @@ const Dashboard = () => {
         }
       } catch (error) {
         toast.error("Error al cargar las programaciones");
+      } finally {
+        setCargando(false);
       }
     };
     fetchCirugias();
@@ -38,7 +39,6 @@ const Dashboard = () => {
   };
 
   const handleEditar = (cirugia) => {
-    // Bloqueo por empresa: solo se editan las cirugías de la empresa propia.
     if (cirugia.EMPRESA !== EMPRESA_PROPIA) {
       toast.error(`Esta cirugía pertenece a ${cirugia.EMPRESA}. Solo puede editar cirugías de ${EMPRESA_PROPIA}.`, {
         duration: 4000,
@@ -64,10 +64,18 @@ const Dashboard = () => {
     });
   };
 
+  if (cargando) {
+    return (
+      <div className="loading-pantalla">
+        <img src="/logo.png" alt="Cargando..." className="logo-animado" />
+        <p>Cargando programaciones...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-content">
-
         <header className="dashboard-header">
           <h2>Programación de Cirugias</h2>
           <button onClick={handleLogout} className="logout-button">Salir</button>
@@ -107,7 +115,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* ---------- VISTA ESCRITORIO: TABLA ---------- */}
         <div className="table-responsive vista-escritorio">
           <table className="cirugias-table">
             <thead>
@@ -155,7 +162,6 @@ const Dashboard = () => {
           </table>
         </div>
 
-        {/* ---------- VISTA MÓVIL: TARJETAS ---------- */}
         <div className="vista-movil">
           {cirugias.length === 0 ? (
             <p className="sin-resultados-movil">No se encontraron resultados para esta búsqueda</p>
@@ -168,35 +174,29 @@ const Dashboard = () => {
                   onClick={() => handleEditar(c)}
                   className={`cirugia-card ${esPropia ? 'card-editable' : 'card-bloqueada'}`}
                 >
-                  {/* Nivel 1: Paciente (lo más importante) */}
                   <div className="card-paciente">
                     {!esPropia && <span className="candado" title="No editable">🔒</span>}
                     {c.PACIENTE}
                   </div>
 
-                  {/* Nivel 2: Cirugía */}
                   <div className="card-cirugia">{c.CIRUGIA}</div>
 
-                  {/* Nivel 3: Metadatos (médico, especialidad) */}
                   <div className="card-meta">
                     <span className="card-medico">{c.MEDICO}</span>
                     <span className="card-especialidad">{c.ESPECIALIDAD}</span>
                   </div>
 
-                  {/* Nivel 4: Fecha y hora, en una franja inferior */}
                   <div className="card-footer">
                     <span className="card-fecha">📅 {formatFecha(c.FECHA)}</span>
                     <span className="card-hora">🕐 {c.HORA_INICIO} - {c.HORA_FIN}</span>
                   </div>
 
-                  {/* Empresa: solo se muestra si NO es la propia (para no repetir lo obvio) */}
                   {!esPropia && <div className="card-empresa">{c.EMPRESA}</div>}
                 </div>
               );
             })
           )}
         </div>
-
       </div>
       <Toaster />
     </div>
