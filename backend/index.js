@@ -106,6 +106,7 @@ app.get('/api/cirugias', async (req, res) => {
 
 app.use('/api/formulario', formularioRoutes);
 app.use('/api/horarios', require('./routes/horarios'));
+app.use('/api/atenciones', require('./routes/atencionesRoutes'));
 
 const PORT = 4005;
 

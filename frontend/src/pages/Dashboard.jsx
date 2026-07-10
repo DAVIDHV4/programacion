@@ -6,6 +6,83 @@ import '../styles/Dashboard.css';
 
 const EMPRESA_PROPIA = 'CLINICA LA LUZ SAC';
 
+const AvisoDeslizable = ({ t, mensaje }) => {
+  const [drag, setDrag] = useState({ x: 0, y: 0 });
+  const [inicio, setInicio] = useState(null);
+
+  const onTouchStart = (e) => {
+    const punto = e.touches[0];
+    setInicio({ x: punto.clientX, y: punto.clientY });
+  };
+
+  const onTouchMove = (e) => {
+    if (!inicio) return;
+    const punto = e.touches[0];
+    setDrag({ x: punto.clientX - inicio.x, y: punto.clientY - inicio.y });
+  };
+
+  const onTouchEnd = () => {
+    const distancia = Math.sqrt(drag.x * drag.x + drag.y * drag.y);
+    if (distancia > 60) {
+      toast.dismiss(t.id);
+    } else {
+      setDrag({ x: 0, y: 0 });
+    }
+    setInicio(null);
+  };
+
+  const onMouseDown = (e) => {
+    setInicio({ x: e.clientX, y: e.clientY });
+  };
+
+  const onMouseMove = (e) => {
+    if (!inicio) return;
+    setDrag({ x: e.clientX - inicio.x, y: e.clientY - inicio.y });
+  };
+
+  const onMouseUp = () => {
+    if (!inicio) return;
+    const distancia = Math.sqrt(drag.x * drag.x + drag.y * drag.y);
+    if (distancia > 60) {
+      toast.dismiss(t.id);
+    } else {
+      setDrag({ x: 0, y: 0 });
+    }
+    setInicio(null);
+  };
+
+  const opacidad = Math.max(0, 1 - Math.sqrt(drag.x * drag.x + drag.y * drag.y) / 150);
+
+  return (
+    <div
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
+      style={{
+        transform: `translate(${drag.x}px, ${drag.y}px)`,
+        opacity: opacidad,
+        transition: inicio ? 'none' : 'transform 0.2s ease, opacity 0.2s ease',
+        background: '#B11A1A',
+        color: '#fff',
+        borderRadius: '12px',
+        padding: '14px 18px',
+        fontSize: '13px',
+        fontWeight: 600,
+        maxWidth: '340px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        cursor: 'grab',
+        touchAction: 'none',
+        userSelect: 'none'
+      }}
+    >
+      {mensaje}
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const [cirugias, setCirugias] = useState([]);
   const [busqueda, setBusqueda] = useState('');
@@ -40,10 +117,15 @@ const Dashboard = () => {
 
   const handleEditar = (cirugia) => {
     if (cirugia.EMPRESA !== EMPRESA_PROPIA) {
-      toast.error(`Esta cirugía pertenece a ${cirugia.EMPRESA}. Solo puede editar cirugías de ${EMPRESA_PROPIA}.`, {
-        duration: 4000,
-        style: { background: '#B11A1A', color: '#fff', borderRadius: '12px', fontSize: '13px' }
-      });
+      toast.custom(
+        (t) => (
+          <AvisoDeslizable
+            t={t}
+            mensaje={`Esta cirugía pertenece a ${cirugia.EMPRESA}. Solo puede editar cirugías de ${EMPRESA_PROPIA}.`}
+          />
+        ),
+        { duration: 4000 }
+      );
       return;
     }
 
@@ -198,7 +280,7 @@ const Dashboard = () => {
           )}
         </div>
       </div>
-      <Toaster />
+      <Toaster position="top-center" />
     </div>
   );
 };
